@@ -4,32 +4,100 @@
  * You'll have to figure out a way to export this function from
  * this file and include it in basic-server.js so that it actually works.
  * *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html. */
+var fs = require("fs");
 
-var handleRequest = function(request, response) {
+var storage;
+
+var messageFile = __dirname+'/messages.json';
+fs.readFile(messageFile, 'utf8', function(err, data){
+  if (err) {
+    return;
+  }
+  storage = JSON.parse(data);
+  console.log(storage);
+});
+
+
+// storage.results.push({username: 'Rishi The G', message: 'GOOMAR!'});
+
+var exports = module.exports = {};
+
+exports.handler = function(request, response) {
   /* the 'request' argument comes from nodes http module. It includes info about the
   request - such as what URL the browser is requesting. */
 
-  /* Documentation for both request and response can be found at
-   * http://nodemanual.org/0.8.14/nodejs_ref_guide/http.html */
-
   console.log("Serving request type " + request.method + " for url " + request.url);
 
-  var statusCode = 200;
-
+  var statusCode = 404;
   /* Without this line, this server wouldn't work. See the note
    * below about CORS. */
   var headers = defaultCorsHeaders;
 
   headers['Content-Type'] = "text/plain";
 
-  /* .writeHead() tells our server what HTTP status code to send back */
-  response.writeHead(statusCode, headers);
+  if (request.url === "/classes/messages") {
 
-  /* Make sure to always call response.end() - Node will not send
-   * anything back to the client until you do. The string you pass to
-   * response.end() will be the body of the response - i.e. what shows
-   * up in the browser.*/
-  response.end("Hello, World!");
+    if (request.method === 'GET'){
+      statusCode = 200;
+      response.writeHead(statusCode, headers);
+      response.end(JSON.stringify(storage));
+    } else if (request.method === 'POST') {
+      var body = '';
+
+      request.on('data', function(data){
+        body += data;
+      });
+
+      request.on('end', function(){
+        var jsonBody = JSON.parse(body);
+        if (!jsonBody.createdAt) {
+          jsonBody.createdAt = Date.now();
+        }
+        if (!jsonBody.roomname) {
+          jsonBody.roomname = 'lobby';
+        }
+        storage.results.push(jsonBody);
+        console.log(storage.results);
+      });
+
+      statusCode = 201;
+      response.writeHead(statusCode, headers);
+      response.end();
+    }
+  } else if (request.url === '/classes/room1') {
+    if (request.method === 'GET') {
+      statusCode = 200;
+      response.writeHead(statusCode, headers);
+      // Filter out based on roomname
+
+      // Send the modified storage object
+      response.end(JSON.stringify(storage));
+    } else if (request.method === 'POST') {
+      var body = '';
+
+      request.on('data', function(data){
+        body += data;
+      });
+
+      request.on('end', function(){
+        var jsonBody = JSON.parse(body);
+        if (!jsonBody.createdAt) {
+          jsonBody.createdAt = Date.now();
+        }
+        jsonBody.roomname = 'room1';
+        storage.results.push(jsonBody);
+        console.log(storage.results);
+      });
+
+      statusCode = 201;
+      response.writeHead(statusCode, headers);
+      response.end();
+    }
+  } else {
+    response.writeHead(statusCode, headers);
+    response.end("Sorry, buster!");
+  }
+
 };
 
 /* These headers will allow Cross-Origin Resource Sharing (CORS).

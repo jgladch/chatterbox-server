@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>chatterbox</title>
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="bower_components/ionicons/css/ionicons.min.css">
+    <link rel="stylesheet" href="styles/animate.css">
+    <link rel="stylesheet" href="styles/styles.css">
+
+    <!-- dependencies -->
+    <script src="bower_components/jquery/jquery.min.js"></script>
+    <script src="bower_components/moment/min/moment.min.js"></script>
+    <!--<script src="bower_components/underscore/underscore-min.js"></script>-->
+    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <!-- your scripts -->
+    <script src="scripts/config.js"></script>
+    <script src="scripts/app.js"></script>
+  </head>
+  <body>
+    <div id="main" class="container">
+      <div class="userView pull-right">
+        <p class="user name">Logged in as: </p>
+      </div>
+      <h1 class="text-center col-sm-9 col-sm-offset-3"><i class="ion-chatbox bounceIn"></i> Chatterbox</h1>
+      <!-- Your HTML goes here! -->
+      <div class="row">
+        <div class="col-sm-3">
+        <h3 class="text-center">Rooms</h3>
+        <div class="input-group roomForm">
+        <input type="text" placeholder="add room" class="form-control" name="roomName" id="roomName" />
+        <span class="input-group-addon" id="sendRoom"><i class="ion-plus"></i></span>
+        </div>
+        <div id="roomSelect" class="list-group">
+
+        </div>
+
+        </div>
+        <div class="col-sm-9">
+          <div id="chats">
+
+          </div>
+          <div class="sendMessage">
+          <div class="input-group bottomSend">
+            <input type="text" class="form-control" placeholder="Type Your Message" name="userMessage" id="userMessage" />
+            <span type="submit" class="submit input-group-addon" id="send">Send</span>
+          </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <script>
+    app.init();
+    app.fetch();
+    var fetchInterval = setInterval(function(){
+      app.fetch()
+    }, 3000);
+    $('#send').on('click', function() {
+      var msgText = $('input[name=userMessage]').val();
+      var message = {
+        username: app.currentUser,
+        message: msgText,
+        roomname: app.currentRoom
+      };
+      app.send(message);
+      $('input[name=userMessage]').val('');
+
+    });
+    $('#sendRoom').on('click', function() {
+      var roomName = $('input[name=roomName]').val();
+      app.addRoom(roomName);
+      $('input[name=roomName]').val('');
+      $('#' + roomName).trigger('click');
+    });
+    $('#userMessage').bind('keypress', function(e) {
+      if (e.keyCode === 13) {
+        $('#send').trigger('click');
+      }
+    });
+    $('#roomName').bind('keypress', function(e) {
+      if (e.keyCode === 13) {
+        $('#sendRoom').trigger('click');
+      }
+    });
+  </script>
+  </body>
+</html>
