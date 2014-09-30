@@ -17,9 +17,6 @@ fs.readFile(messageFile, 'utf8', function(err, data){
   console.log(storage);
 });
 
-
-// storage.results.push({username: 'Rishi The G', message: 'GOOMAR!'});
-
 var exports = module.exports = {};
 
 exports.handler = function(request, response) {
@@ -32,6 +29,15 @@ exports.handler = function(request, response) {
   /* Without this line, this server wouldn't work. See the note
    * below about CORS. */
   var headers = defaultCorsHeaders;
+
+  var saveStorage = function() {
+    var stringified = JSON.stringify(storage);
+    fs.writeFile(messageFile, stringified, function(err){
+      if (err) {
+        return;
+      }
+    });
+  };
 
   headers['Content-Type'] = "text/plain";
 
@@ -57,6 +63,7 @@ exports.handler = function(request, response) {
           jsonBody.roomname = 'lobby';
         }
         storage.results.push(jsonBody);
+        saveStorage();
         console.log(storage.results);
       });
 
@@ -86,6 +93,7 @@ exports.handler = function(request, response) {
         }
         jsonBody.roomname = 'room1';
         storage.results.push(jsonBody);
+        saveStorage();
         console.log(storage.results);
       });
 
@@ -97,6 +105,7 @@ exports.handler = function(request, response) {
     response.writeHead(statusCode, headers);
     response.end("Sorry, buster!");
   }
+
 
 };
 
